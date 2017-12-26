@@ -1,4 +1,4 @@
-package com.example.takimoto.camera_api_sample
+package com.example.takimoto.camera_api_sample.util
 
 import android.app.Activity
 import android.content.pm.PackageManager

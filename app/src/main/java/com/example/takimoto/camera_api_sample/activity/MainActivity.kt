@@ -1,9 +1,10 @@
-package com.example.takimoto.camera_api_sample
+package com.example.takimoto.camera_api_sample.activity
 
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.Button
+import com.example.takimoto.camera_api_sample.R
 
 class MainActivity : AppCompatActivity() {
 

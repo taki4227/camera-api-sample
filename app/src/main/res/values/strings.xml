@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">camera-api-sample</string>
+
+    <string name="camera_permission_description">カメラへのアクセスが許可されていません。[権限]⇒[カメラ]より許可してからお試しください。</string>
+    <string name="dialog_permission_setting">設定</string>
+    <string name="dialog_cancel">キャンセル</string>
 </resources>
