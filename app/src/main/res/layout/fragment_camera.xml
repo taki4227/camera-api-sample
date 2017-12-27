@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="match_parent"
     android:layout_width="match_parent"
+    android:layout_height="match_parent"
     >
+
+    <com.example.android.camera2basic.AutoFitTextureView
+        android:id="@+id/texture_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        />
 
     <android.support.v7.widget.AppCompatButton
         android:id="@+id/permission_setting_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="設定"
+        android:visibility="gone"
         />
 
-</FrameLayout>
+</RelativeLayout>

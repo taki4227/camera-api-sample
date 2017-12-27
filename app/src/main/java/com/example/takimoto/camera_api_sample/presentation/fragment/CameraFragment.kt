@@ -1,35 +1,66 @@
-package com.example.takimoto.camera_api_sample.fragment
+package com.example.takimoto.camera_api_sample.presentation.fragment
 
 import android.Manifest
+import android.graphics.SurfaceTexture
+import android.media.ImageReader
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.app.Fragment
+import android.util.Size
 import android.view.LayoutInflater
+import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import com.example.takimoto.camera_api_sample.R
+import com.example.takimoto.camera_api_sample.domain.thread.CameraBackgroundThread
+import com.example.takimoto.camera_api_sample.domain.usecase.CameraInterface
+import com.example.takimoto.camera_api_sample.domain.usecase.CameraUseCase
+import com.example.takimoto.camera_api_sample.presentation.view.dialog.PermissionSettingDialog
+import com.example.takimoto.camera_api_sample.presentation.view.view.AutoFitTextureView
 import com.example.takimoto.camera_api_sample.util.PermissoinUtil
-import com.example.takimoto.camera_api_sample.view.dialog.PermissionSettingDialog
 
 /**
  * Created by takimoto on 2017/12/25.
  */
-class CameraFragment : Fragment() {
+class CameraFragment : Fragment(), CameraInterface {
 
-    private var isPermissionAlreadyDenied = false
+    private val logTag = this::class.java.simpleName
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater?.inflate(R.layout.fragment_camera, container, false)
+    private var mIsPermissionAlreadyDenied = false
+
+    private lateinit var mCameraUseCase: CameraUseCase
+
+    private lateinit var mTextureView: AutoFitTextureView
+
+    private lateinit var mPreviewSize: Size
+
+    private lateinit var mCameraBackgroundThread: CameraBackgroundThread
+
+    private var imageReader: ImageReader? = null
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_camera, container, false)
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        mTextureView = view.findViewById(R.id.texture_view)
 
         activity.findViewById<Button>(R.id.permission_setting_button)
                 .setOnClickListener {
                     PermissoinUtil.requestPermission(this, arrayOf(Manifest.permission.CAMERA), PermissoinUtil.CAMERA_REQUEST_CODE)
                 }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        mCameraUseCase = CameraUseCase()
+
+        mCameraBackgroundThread = CameraBackgroundThread()
     }
 
     override fun onResume() {
@@ -44,7 +75,7 @@ class CameraFragment : Fragment() {
             if (grantResults.size > 1 && PermissoinUtil.hasGranted(grantResults[0])) {
                 Toast.makeText(activity, "Accept permission", Toast.LENGTH_LONG).show()
             } else {
-                isPermissionAlreadyDenied = true
+                mIsPermissionAlreadyDenied = true
                 Toast.makeText(activity, "Deny permission", Toast.LENGTH_LONG).show()
                 showSettingDialog()
             }
@@ -62,10 +93,10 @@ class CameraFragment : Fragment() {
     }
 
     private fun requestPermission() {
-        if (!isPermissionAlreadyDenied) {
+        if (!mIsPermissionAlreadyDenied) {
             PermissoinUtil.requestPermission(this, arrayOf(Manifest.permission.CAMERA), PermissoinUtil.CAMERA_REQUEST_CODE)
         } else {
-            isPermissionAlreadyDenied = false
+            mIsPermissionAlreadyDenied = false
         }
     }
 
@@ -76,4 +107,14 @@ class CameraFragment : Fragment() {
         }
         fragmentTransaction.commitAllowingStateLoss()
     }
+
+    override val surfaceTextureFromTextureView: SurfaceTexture = mTextureView.surfaceTexture
+
+    override val previewSize: Size = mPreviewSize
+
+    override val backgroundHandler: Handler? = mCameraBackgroundThread.getHandler()
+
+    override val imageRenderSurface: Surface? = imageReader?.surface
+
+    override val rotation: Int = activity.windowManager.defaultDisplay.rotation
 }

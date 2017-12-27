@@ -1,4 +1,4 @@
-package com.example.takimoto.camera_api_sample.view.dialog
+package com.example.takimoto.camera_api_sample.presentation.view.dialog
 
 import android.app.AlertDialog
 import android.app.Dialog

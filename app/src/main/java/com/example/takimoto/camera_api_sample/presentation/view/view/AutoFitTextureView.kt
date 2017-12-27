@@ -1,4 +1,4 @@
-package com.example.takimoto.camera_api_sample.view.view
+package com.example.takimoto.camera_api_sample.presentation.view.view
 
 import android.content.Context
 import android.util.AttributeSet
