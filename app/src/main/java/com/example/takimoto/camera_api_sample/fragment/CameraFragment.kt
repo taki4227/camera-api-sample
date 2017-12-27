@@ -10,7 +10,7 @@ import android.widget.Button
 import android.widget.Toast
 import com.example.takimoto.camera_api_sample.R
 import com.example.takimoto.camera_api_sample.util.PermissoinUtil
-import com.example.takimoto.camera_api_sample.view.PermissionSettingDialog
+import com.example.takimoto.camera_api_sample.view.dialog.PermissionSettingDialog
 
 /**
  * Created by takimoto on 2017/12/25.
