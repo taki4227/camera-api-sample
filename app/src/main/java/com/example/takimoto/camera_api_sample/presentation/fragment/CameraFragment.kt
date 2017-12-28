@@ -1,7 +1,9 @@
 package com.example.takimoto.camera_api_sample.presentation.fragment
 
 import android.Manifest
+import android.annotation.TargetApi
 import android.content.Context
+import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
@@ -16,14 +18,21 @@ import android.util.Size
 import android.view.*
 import android.widget.Button
 import com.example.takimoto.camera_api_sample.R
+import com.example.takimoto.camera_api_sample.data.ImageFileStore
 import com.example.takimoto.camera_api_sample.domain.thread.CameraBackgroundThread
 import com.example.takimoto.camera_api_sample.domain.usecase.CameraInterface
 import com.example.takimoto.camera_api_sample.domain.usecase.CameraUseCase
+import com.example.takimoto.camera_api_sample.domain.usecase.CompareSizesByArea
 import com.example.takimoto.camera_api_sample.presentation.view.dialog.PermissionSettingDialog
 import com.example.takimoto.camera_api_sample.presentation.view.view.AutoFitTextureView
 import com.example.takimoto.camera_api_sample.util.PermissoinUtil
+import java.io.File
+import java.util.*
 
 /**
+ * カメラ機能
+ * Camera2 API(Android M以上用)
+ *
  * Created by takimoto on 2017/12/25.
  */
 class CameraFragment : Fragment(), CameraInterface {
@@ -124,34 +133,35 @@ class CameraFragment : Fragment(), CameraInterface {
         fragmentTransaction.commitAllowingStateLoss()
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     private fun openCamera(width: Int, height: Int) {
         if (!PermissoinUtil.checkSelfPermission(activity, Manifest.permission.CAMERA)) {
             requestPermission()
             return
         }
 
-        val cameraId = getCameraId()
+        val cameraId = getCameraId() ?: return
+
+        setUpCameraOutputs(cameraId)
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     private fun getCameraId(): String? {
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return null
-
         val manager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         try {
-            for(cameraId in manager.cameraIdList) {
+            for (cameraId in manager.cameraIdList) {
 
                 val cameraCharacteristics = manager.getCameraCharacteristics(cameraId)
 
                 // フロントカメラを利用しない
                 val cameraDirection = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING)
-                if(cameraDirection != null
+                if (cameraDirection != null
                         && cameraDirection == CameraCharacteristics.LENS_FACING_FRONT) {
                     continue
                 }
 
                 // ストリーム制御をサポートしていない場合、セットアップを中断する
-                val map = cameraCharacteristics.get(
-                        CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: continue
+                cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: continue
 
                 return cameraId
             }
@@ -167,10 +177,43 @@ class CameraFragment : Fragment(), CameraInterface {
     }
 
     /**
-     *
+     * カメラの出力セットアップ
      */
-    private fun setUpCameraOutputs() {
+    @TargetApi(Build.VERSION_CODES.M)
+    private fun setUpCameraOutputs(cameraId: String) {
+        val manager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        try {
+            val map = manager.getCameraCharacteristics(cameraId)
+                    .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
 
+            // 最大サイズでキャプチャする
+            val largestSize = Collections.max(
+                    Arrays.asList(*map.getOutputSizes(ImageFormat.JPEG)),
+                    CompareSizesByArea())
+
+            mImageReader = ImageReader.newInstance(largestSize.width, largestSize.height,
+                    ImageFormat.JPEG, 2).apply {
+                setOnImageAvailableListener(
+                        { reader ->
+                            // 画像を保存
+                            val fileName = "pic_" + System.currentTimeMillis() + ".jpg"
+                            val file = File(activity.getExternalFilesDir(null), fileName)
+                            mCameraBackgroundThread.getHandler()?.post(ImageFileStore(reader.acquireNextImage(), file))
+
+                        }, mCameraBackgroundThread.getHandler()
+                )
+            }
+
+//            setUpPreview(map.getOutputSizes(SurfaceTexture::class.java),
+//                    width, height, largest)
+//            configurePreviewTransform(width, height)
+
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        } catch (e: NullPointerException) {
+            // Camera2 API未サポート
+            Log.e(TAG, "Camera Error:not support Camera2API")
+        }
     }
 
     private fun requestPermission() {
