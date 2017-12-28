@@ -9,13 +9,15 @@ import com.example.takimoto.camera_api_sample.presentation.fragment.CameraFragme
  */
 class CameraActivity : AppCompatActivity() {
 
-    private val logTag = this::class.java.simpleName
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, CameraFragment())
                 .commitAllowingStateLoss()
+    }
+
+    companion object {
+        private val TAG = this::class.java.simpleName
     }
 }

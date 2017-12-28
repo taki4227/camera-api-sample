@@ -17,4 +17,8 @@ class MainActivity : AppCompatActivity() {
                     startActivity(Intent(this, CameraActivity::class.java))
                 }
     }
+
+    companion object {
+        private val TAG = this::class.java.simpleName
+    }
 }

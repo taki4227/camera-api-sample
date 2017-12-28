@@ -9,8 +9,6 @@ import android.util.Log
  */
 class CameraBackgroundThread {
 
-    private val logTag = this::class.java.simpleName
-
     private var backgroundThread: HandlerThread? = null
     private var backgroundHandler: Handler? = null
 
@@ -31,7 +29,11 @@ class CameraBackgroundThread {
             backgroundThread = null
             backgroundHandler = null
         } catch (e: InterruptedException) {
-            Log.e(logTag, e.toString())
+            Log.e(TAG, e.toString())
         }
+    }
+
+    companion object {
+        private val TAG = this::class.java.simpleName
     }
 }

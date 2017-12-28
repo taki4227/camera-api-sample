@@ -11,8 +11,6 @@ import java.io.IOException
  */
 class ImageFileStore(private val image: Image, private val file: File) : Runnable {
 
-    private val logTag = this::class.java.simpleName
-
     override fun run() {
         val buffer = image.planes[0].buffer
         val bytes = ByteArray(buffer.remaining())
@@ -23,17 +21,21 @@ class ImageFileStore(private val image: Image, private val file: File) : Runnabl
                 write(bytes)
             }
         } catch (e: IOException) {
-            Log.e(logTag, e.toString())
+            Log.e(TAG, e.toString())
         } finally {
             image.close()
             output?.let {
                 try {
                     it.close()
                 } catch (e: IOException) {
-                    Log.e(logTag, e.toString())
+                    Log.e(TAG, e.toString())
                 }
             }
         }
+    }
+
+    companion object {
+        private val TAG = this::class.java.simpleName
     }
 
 }

@@ -1,18 +1,20 @@
 package com.example.takimoto.camera_api_sample.presentation.fragment
 
 import android.Manifest
+import android.content.Context
 import android.graphics.SurfaceTexture
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 import android.media.ImageReader
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.util.Size
-import android.view.LayoutInflater
-import android.view.Surface
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Button
-import android.widget.Toast
 import com.example.takimoto.camera_api_sample.R
 import com.example.takimoto.camera_api_sample.domain.thread.CameraBackgroundThread
 import com.example.takimoto.camera_api_sample.domain.usecase.CameraInterface
@@ -26,8 +28,6 @@ import com.example.takimoto.camera_api_sample.util.PermissoinUtil
  */
 class CameraFragment : Fragment(), CameraInterface {
 
-    private val logTag = this::class.java.simpleName
-
     private var mIsPermissionAlreadyDenied = false
 
     private lateinit var mCameraUseCase: CameraUseCase
@@ -38,7 +38,26 @@ class CameraFragment : Fragment(), CameraInterface {
 
     private lateinit var mCameraBackgroundThread: CameraBackgroundThread
 
-    private var imageReader: ImageReader? = null
+    private var mImageReader: ImageReader? = null
+
+    private val mSurfaceTextureListener = object : TextureView.SurfaceTextureListener {
+
+        override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
+            // SurfaceTextureの準備が完了した
+            openCamera(width, height)
+        }
+
+        override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) {
+            // Viewのサイズに変更があったためPreviewサイズを計算し直す
+//            configurePreviewTransform(width, height)
+        }
+
+        override fun onSurfaceTextureDestroyed(texture: SurfaceTexture): Boolean {
+            return true
+        }
+
+        override fun onSurfaceTextureUpdated(texture: SurfaceTexture) {}
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_camera, container, false)
@@ -58,45 +77,42 @@ class CameraFragment : Fragment(), CameraInterface {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        mCameraUseCase = CameraUseCase()
+        mCameraUseCase = CameraUseCase().also {
+            it.setInterface(this)
+        }
 
         mCameraBackgroundThread = CameraBackgroundThread()
     }
 
     override fun onResume() {
         super.onResume()
+        mCameraBackgroundThread.start()
 
-        openCamera()
+        // スクリーンがOFFにされ後に再度ONにすると、TextureViewがすでに使用可能になっており、
+        // TextureView.SurfaceTextureListener.onSurfaceTextureAvailable()が呼び出されないため
+        // その場合は、すぐカメラプレビューを実行する
+        if (mTextureView.isAvailable) {
+            openCamera(mTextureView.width, mTextureView.height)
+        } else {
+            mTextureView.surfaceTextureListener = mSurfaceTextureListener
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        closeCamera()
+        mCameraBackgroundThread.stop()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
 
         if (requestCode == PermissoinUtil.CAMERA_REQUEST_CODE) {
-            if (grantResults.size > 1 && PermissoinUtil.hasGranted(grantResults[0])) {
-                Toast.makeText(activity, "Accept permission", Toast.LENGTH_LONG).show()
-            } else {
+            if (grantResults.size != 1 || !PermissoinUtil.hasGranted(grantResults[0])) {
                 mIsPermissionAlreadyDenied = true
-                Toast.makeText(activity, "Deny permission", Toast.LENGTH_LONG).show()
                 showSettingDialog()
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        }
-    }
-
-    private fun openCamera() {
-        if (!PermissoinUtil.checkSelfPermission(activity, Manifest.permission.CAMERA)) {
-            requestPermission()
-            return
-        }
-        Toast.makeText(activity, "Open camera", Toast.LENGTH_LONG).show()
-    }
-
-    private fun requestPermission() {
-        if (!mIsPermissionAlreadyDenied) {
-            PermissoinUtil.requestPermission(this, arrayOf(Manifest.permission.CAMERA), PermissoinUtil.CAMERA_REQUEST_CODE)
-        } else {
-            mIsPermissionAlreadyDenied = false
         }
     }
 
@@ -108,13 +124,80 @@ class CameraFragment : Fragment(), CameraInterface {
         fragmentTransaction.commitAllowingStateLoss()
     }
 
+    private fun openCamera(width: Int, height: Int) {
+        if (!PermissoinUtil.checkSelfPermission(activity, Manifest.permission.CAMERA)) {
+            requestPermission()
+            return
+        }
+
+        val cameraId = getCameraId()
+    }
+
+    private fun getCameraId(): String? {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return null
+
+        val manager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        try {
+            for(cameraId in manager.cameraIdList) {
+
+                val cameraCharacteristics = manager.getCameraCharacteristics(cameraId)
+
+                // フロントカメラを利用しない
+                val cameraDirection = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING)
+                if(cameraDirection != null
+                        && cameraDirection == CameraCharacteristics.LENS_FACING_FRONT) {
+                    continue
+                }
+
+                // ストリーム制御をサポートしていない場合、セットアップを中断する
+                val map = cameraCharacteristics.get(
+                        CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: continue
+
+                return cameraId
+            }
+
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        } catch (e: NullPointerException) {
+            // Camera2 API未サポート
+            Log.e(TAG, "Camera Error:not support Camera2API")
+        }
+
+        return null
+    }
+
+    /**
+     *
+     */
+    private fun setUpCameraOutputs() {
+
+    }
+
+    private fun requestPermission() {
+        if (!mIsPermissionAlreadyDenied) {
+            PermissoinUtil.requestPermission(this, arrayOf(Manifest.permission.CAMERA), PermissoinUtil.CAMERA_REQUEST_CODE)
+        } else {
+            mIsPermissionAlreadyDenied = false
+        }
+    }
+
+    private fun closeCamera() {
+//        mCameraUseCase.close()
+        mImageReader?.close()
+        mImageReader = null
+    }
+
     override val surfaceTextureFromTextureView: SurfaceTexture = mTextureView.surfaceTexture
 
     override val previewSize: Size = mPreviewSize
 
     override val backgroundHandler: Handler? = mCameraBackgroundThread.getHandler()
 
-    override val imageRenderSurface: Surface? = imageReader?.surface
+    override val imageRenderSurface: Surface? = mImageReader?.surface
 
     override val rotation: Int = activity.windowManager.defaultDisplay.rotation
+
+    companion object {
+        private val TAG = this::class.java.simpleName
+    }
 }
