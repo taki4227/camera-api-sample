@@ -1,4 +1,4 @@
-package com.example.takimoto.camera_api_sample
+package com.example.taki.camera_api_sample
 
 import org.junit.Test
 

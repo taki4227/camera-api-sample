@@ -1,4 +1,4 @@
-package com.example.takimoto.camera_api_sample.data
+package com.example.taki.camera_api_sample.data
 
 import android.media.Image
 import android.util.Log
@@ -7,7 +7,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 /**
- * Created by takimoto on 2017/12/27.
+ * Created by taki on 2017/12/27.
  */
 class ImageFileStore(private val image: Image, private val file: File) : Runnable {
 

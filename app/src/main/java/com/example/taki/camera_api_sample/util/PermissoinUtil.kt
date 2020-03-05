@@ -1,4 +1,4 @@
-package com.example.takimoto.camera_api_sample.util
+package com.example.taki.camera_api_sample.util
 
 import android.app.Activity
 import android.content.pm.PackageManager
@@ -8,7 +8,7 @@ import android.support.v4.app.Fragment
 import android.support.v4.content.PermissionChecker
 
 /**
- * Created by takimoto on 2017/12/26.
+ * Created by taki on 2017/12/26.
  */
 class PermissoinUtil {
 

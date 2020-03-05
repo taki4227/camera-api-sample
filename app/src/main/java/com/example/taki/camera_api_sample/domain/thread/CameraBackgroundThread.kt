@@ -1,11 +1,11 @@
-package com.example.takimoto.camera_api_sample.domain.thread
+package com.example.taki.camera_api_sample.domain.thread
 
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
 
 /**
- * Created by takimoto on 2017/12/27.
+ * Created by taki on 2017/12/27.
  */
 class CameraBackgroundThread {
 

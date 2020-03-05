@@ -1,10 +1,10 @@
-package com.example.takimoto.camera_api_sample.domain.usecase
+package com.example.taki.camera_api_sample.domain.usecase
 
 import android.util.SparseIntArray
 import android.view.Surface
 
 /**
- * Created by takimoto on 2017/12/27.
+ * Created by taki on 2017/12/27.
  */
 class CameraUseCase {
 

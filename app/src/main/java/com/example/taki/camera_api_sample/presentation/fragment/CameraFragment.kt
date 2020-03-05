@@ -1,4 +1,4 @@
-package com.example.takimoto.camera_api_sample.presentation.fragment
+package com.example.taki.camera_api_sample.presentation.fragment
 
 import android.Manifest
 import android.annotation.TargetApi
@@ -17,15 +17,15 @@ import android.util.Log
 import android.util.Size
 import android.view.*
 import android.widget.Button
-import com.example.takimoto.camera_api_sample.R
-import com.example.takimoto.camera_api_sample.data.ImageFileStore
-import com.example.takimoto.camera_api_sample.domain.thread.CameraBackgroundThread
-import com.example.takimoto.camera_api_sample.domain.usecase.CameraInterface
-import com.example.takimoto.camera_api_sample.domain.usecase.CameraUseCase
-import com.example.takimoto.camera_api_sample.domain.usecase.CompareSizesByArea
-import com.example.takimoto.camera_api_sample.presentation.view.dialog.PermissionSettingDialog
-import com.example.takimoto.camera_api_sample.presentation.view.view.AutoFitTextureView
-import com.example.takimoto.camera_api_sample.util.PermissoinUtil
+import com.example.taki.camera_api_sample.R
+import com.example.taki.camera_api_sample.data.ImageFileStore
+import com.example.taki.camera_api_sample.domain.thread.CameraBackgroundThread
+import com.example.taki.camera_api_sample.domain.usecase.CameraInterface
+import com.example.taki.camera_api_sample.domain.usecase.CameraUseCase
+import com.example.taki.camera_api_sample.domain.usecase.CompareSizesByArea
+import com.example.taki.camera_api_sample.presentation.view.dialog.PermissionSettingDialog
+import com.example.taki.camera_api_sample.presentation.view.view.AutoFitTextureView
+import com.example.taki.camera_api_sample.util.PermissoinUtil
 import java.io.File
 import java.util.*
 
@@ -33,7 +33,7 @@ import java.util.*
  * カメラ機能
  * Camera2 API(Android M以上用)
  *
- * Created by takimoto on 2017/12/25.
+ * Created by taki on 2017/12/25.
  */
 class CameraFragment : Fragment(), CameraInterface {
 
@@ -77,7 +77,7 @@ class CameraFragment : Fragment(), CameraInterface {
 
         mTextureView = view.findViewById(R.id.texture_view)
 
-        activity.findViewById<Button>(R.id.permission_setting_button)
+        activity!!.findViewById<Button>(R.id.permission_setting_button)
                 .setOnClickListener {
                     PermissoinUtil.requestPermission(this, arrayOf(Manifest.permission.CAMERA), PermissoinUtil.CAMERA_REQUEST_CODE)
                 }
@@ -135,7 +135,7 @@ class CameraFragment : Fragment(), CameraInterface {
 
     @TargetApi(Build.VERSION_CODES.M)
     private fun openCamera(width: Int, height: Int) {
-        if (!PermissoinUtil.checkSelfPermission(activity, Manifest.permission.CAMERA)) {
+        if (!PermissoinUtil.checkSelfPermission(activity!!, Manifest.permission.CAMERA)) {
             requestPermission()
             return
         }
@@ -147,7 +147,7 @@ class CameraFragment : Fragment(), CameraInterface {
 
     @TargetApi(Build.VERSION_CODES.M)
     private fun getCameraId(): String? {
-        val manager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        val manager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         try {
             for (cameraId in manager.cameraIdList) {
 
@@ -181,7 +181,7 @@ class CameraFragment : Fragment(), CameraInterface {
      */
     @TargetApi(Build.VERSION_CODES.M)
     private fun setUpCameraOutputs(cameraId: String) {
-        val manager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        val manager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         try {
             val map = manager.getCameraCharacteristics(cameraId)
                     .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
@@ -197,7 +197,7 @@ class CameraFragment : Fragment(), CameraInterface {
                         { reader ->
                             // 画像を保存
                             val fileName = "pic_" + System.currentTimeMillis() + ".jpg"
-                            val file = File(activity.getExternalFilesDir(null), fileName)
+                            val file = File(activity!!.getExternalFilesDir(null), fileName)
                             mCameraBackgroundThread.getHandler()?.post(ImageFileStore(reader.acquireNextImage(), file))
 
                         }, mCameraBackgroundThread.getHandler()
@@ -238,7 +238,7 @@ class CameraFragment : Fragment(), CameraInterface {
 
     override val imageRenderSurface: Surface? = mImageReader?.surface
 
-    override val rotation: Int = activity.windowManager.defaultDisplay.rotation
+    override val rotation: Int = activity!!.windowManager.defaultDisplay.rotation
 
     companion object {
         private val TAG = this::class.java.simpleName

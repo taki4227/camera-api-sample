@@ -1,4 +1,4 @@
-package com.example.takimoto.camera_api_sample.presentation.view.dialog
+package com.example.taki.camera_api_sample.presentation.view.dialog
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -7,10 +7,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.support.v4.app.DialogFragment
-import com.example.takimoto.camera_api_sample.R
+import com.example.taki.camera_api_sample.R
 
 /**
- * Created by takimoto on 2017/12/26.
+ * Created by taki on 2017/12/26.
  */
 class PermissionSettingDialog : DialogFragment() {
 
@@ -24,9 +24,9 @@ class PermissionSettingDialog : DialogFragment() {
                     .setPositiveButton(R.string.dialog_permission_setting,
                             { _, _ ->
                                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                    data = Uri.fromParts("package", activity.packageName, null)
+                                    data = Uri.fromParts("package", activity!!.packageName, null)
                                 }
-                                activity.startActivity(intent)
+                                activity!!.startActivity(intent)
                             })
                     .setNegativeButton(R.string.dialog_cancel, null)
                     .create()

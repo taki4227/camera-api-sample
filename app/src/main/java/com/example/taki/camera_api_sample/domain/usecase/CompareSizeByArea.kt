@@ -1,4 +1,4 @@
-package com.example.takimoto.camera_api_sample.domain.usecase
+package com.example.taki.camera_api_sample.domain.usecase
 
 import android.os.Build
 import android.util.Size
@@ -7,7 +7,7 @@ import java.util.*
 
 /**
  * Compares two `Size`s based on their areas.
- * Created by takimoto on 2017/12/27.
+ * Created by taki on 2017/12/27.
  */
 internal class CompareSizesByArea : Comparator<Size> {
 
