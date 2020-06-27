@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     >
 
-    <com.example.android.camera2basic.AutoFitTextureView
+    <com.example.taki.camera_api_sample.presentation.view.view.AutoFitTextureView
         android:id="@+id/texture_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -13,7 +13,7 @@
         android:layout_alignParentTop="true"
         />
 
-    <android.support.v7.widget.AppCompatButton
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/permission_setting_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -6,7 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.support.v4.app.DialogFragment
+import androidx.fragment.app.DialogFragment
 import com.example.taki.camera_api_sample.R
 
 /**
@@ -19,15 +19,16 @@ class PermissionSettingDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-            AlertDialog.Builder(activity)
-                    .setMessage(R.string.camera_permission_description)
-                    .setPositiveButton(R.string.dialog_permission_setting,
-                            { _, _ ->
-                                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                    data = Uri.fromParts("package", activity!!.packageName, null)
-                                }
-                                activity!!.startActivity(intent)
-                            })
-                    .setNegativeButton(R.string.dialog_cancel, null)
-                    .create()
+        AlertDialog.Builder(activity)
+            .setMessage(R.string.camera_permission_description)
+            .setPositiveButton(
+                R.string.dialog_permission_setting
+            ) { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", activity!!.packageName, null)
+                }
+                activity!!.startActivity(intent)
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .create()
 }

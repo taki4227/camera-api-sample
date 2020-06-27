@@ -1,7 +1,7 @@
 package com.example.taki.camera_api_sample.presentation.activity
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.example.taki.camera_api_sample.presentation.fragment.CameraFragment
 
 /**
@@ -13,8 +13,8 @@ class CameraActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         supportFragmentManager.beginTransaction()
-                .replace(android.R.id.content, CameraFragment())
-                .commitAllowingStateLoss()
+            .replace(android.R.id.content, CameraFragment())
+            .commitAllowingStateLoss()
     }
 
     companion object {

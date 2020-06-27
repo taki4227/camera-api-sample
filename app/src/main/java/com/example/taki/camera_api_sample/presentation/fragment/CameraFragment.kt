@@ -12,11 +12,11 @@ import android.media.ImageReader
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.support.v4.app.Fragment
 import android.util.Log
 import android.util.Size
 import android.view.*
 import android.widget.Button
+import androidx.fragment.app.Fragment
 import com.example.taki.camera_api_sample.R
 import com.example.taki.camera_api_sample.data.ImageFileStore
 import com.example.taki.camera_api_sample.domain.thread.CameraBackgroundThread
@@ -25,7 +25,7 @@ import com.example.taki.camera_api_sample.domain.usecase.CameraUseCase
 import com.example.taki.camera_api_sample.domain.usecase.CompareSizesByArea
 import com.example.taki.camera_api_sample.presentation.view.dialog.PermissionSettingDialog
 import com.example.taki.camera_api_sample.presentation.view.view.AutoFitTextureView
-import com.example.taki.camera_api_sample.util.PermissoinUtil
+import com.example.taki.camera_api_sample.util.PermissionUtil
 import java.io.File
 import java.util.*
 
@@ -68,7 +68,11 @@ class CameraFragment : Fragment(), CameraInterface {
         override fun onSurfaceTextureUpdated(texture: SurfaceTexture) {}
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment_camera, container, false)
     }
 
@@ -78,9 +82,13 @@ class CameraFragment : Fragment(), CameraInterface {
         mTextureView = view.findViewById(R.id.texture_view)
 
         activity!!.findViewById<Button>(R.id.permission_setting_button)
-                .setOnClickListener {
-                    PermissoinUtil.requestPermission(this, arrayOf(Manifest.permission.CAMERA), PermissoinUtil.CAMERA_REQUEST_CODE)
-                }
+            .setOnClickListener {
+                PermissionUtil.requestPermission(
+                    this,
+                    arrayOf(Manifest.permission.CAMERA),
+                    PermissionUtil.CAMERA_REQUEST_CODE
+                )
+            }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -113,10 +121,14 @@ class CameraFragment : Fragment(), CameraInterface {
         mCameraBackgroundThread.stop()
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
 
-        if (requestCode == PermissoinUtil.CAMERA_REQUEST_CODE) {
-            if (grantResults.size != 1 || !PermissoinUtil.hasGranted(grantResults[0])) {
+        if (requestCode == PermissionUtil.CAMERA_REQUEST_CODE) {
+            if (grantResults.size != 1 || !PermissionUtil.hasGranted(grantResults[0])) {
                 mIsPermissionAlreadyDenied = true
                 showSettingDialog()
             }
@@ -135,7 +147,7 @@ class CameraFragment : Fragment(), CameraInterface {
 
     @TargetApi(Build.VERSION_CODES.M)
     private fun openCamera(width: Int, height: Int) {
-        if (!PermissoinUtil.checkSelfPermission(activity!!, Manifest.permission.CAMERA)) {
+        if (!PermissionUtil.checkSelfPermission(activity!!, Manifest.permission.CAMERA)) {
             requestPermission()
             return
         }
@@ -156,12 +168,14 @@ class CameraFragment : Fragment(), CameraInterface {
                 // フロントカメラを利用しない
                 val cameraDirection = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING)
                 if (cameraDirection != null
-                        && cameraDirection == CameraCharacteristics.LENS_FACING_FRONT) {
+                    && cameraDirection == CameraCharacteristics.LENS_FACING_FRONT
+                ) {
                     continue
                 }
 
                 // ストリーム制御をサポートしていない場合、セットアップを中断する
-                cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: continue
+                cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+                    ?: continue
 
                 return cameraId
             }
@@ -184,23 +198,27 @@ class CameraFragment : Fragment(), CameraInterface {
         val manager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         try {
             val map = manager.getCameraCharacteristics(cameraId)
-                    .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+                .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
 
             // 最大サイズでキャプチャする
             val largestSize = Collections.max(
-                    Arrays.asList(*map.getOutputSizes(ImageFormat.JPEG)),
-                    CompareSizesByArea())
+                Arrays.asList(*map.getOutputSizes(ImageFormat.JPEG)),
+                CompareSizesByArea()
+            )
 
-            mImageReader = ImageReader.newInstance(largestSize.width, largestSize.height,
-                    ImageFormat.JPEG, 2).apply {
+            mImageReader = ImageReader.newInstance(
+                largestSize.width, largestSize.height,
+                ImageFormat.JPEG, 2
+            ).apply {
                 setOnImageAvailableListener(
-                        { reader ->
-                            // 画像を保存
-                            val fileName = "pic_" + System.currentTimeMillis() + ".jpg"
-                            val file = File(activity!!.getExternalFilesDir(null), fileName)
-                            mCameraBackgroundThread.getHandler()?.post(ImageFileStore(reader.acquireNextImage(), file))
+                    { reader ->
+                        // 画像を保存
+                        val fileName = "pic_" + System.currentTimeMillis() + ".jpg"
+                        val file = File(activity!!.getExternalFilesDir(null), fileName)
+                        mCameraBackgroundThread.getHandler()
+                            ?.post(ImageFileStore(reader.acquireNextImage(), file))
 
-                        }, mCameraBackgroundThread.getHandler()
+                    }, mCameraBackgroundThread.getHandler()
                 )
             }
 
@@ -218,7 +236,11 @@ class CameraFragment : Fragment(), CameraInterface {
 
     private fun requestPermission() {
         if (!mIsPermissionAlreadyDenied) {
-            PermissoinUtil.requestPermission(this, arrayOf(Manifest.permission.CAMERA), PermissoinUtil.CAMERA_REQUEST_CODE)
+            PermissionUtil.requestPermission(
+                this,
+                arrayOf(Manifest.permission.CAMERA),
+                PermissionUtil.CAMERA_REQUEST_CODE
+            )
         } else {
             mIsPermissionAlreadyDenied = false
         }

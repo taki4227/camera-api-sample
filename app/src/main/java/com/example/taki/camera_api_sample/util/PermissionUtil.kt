@@ -3,14 +3,14 @@ package com.example.taki.camera_api_sample.util
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
-import android.support.v4.app.ActivityCompat
-import android.support.v4.app.Fragment
-import android.support.v4.content.PermissionChecker
+import androidx.core.app.ActivityCompat
+import androidx.core.content.PermissionChecker
+import androidx.fragment.app.Fragment
 
 /**
  * Created by taki on 2017/12/26.
  */
-class PermissoinUtil {
+class PermissionUtil {
 
     companion object {
         const val CAMERA_REQUEST_CODE = 1
